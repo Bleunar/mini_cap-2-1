@@ -6,6 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -17,12 +19,21 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import app.database.Database;
-import app.function.ProductTemp;
+import app.function.ProductFunc;
 import app.misc.Colors;
 import app.misc.Dashboard_functions;
 import app.misc.PopUp;
 
-public class Dashboard extends JFrame implements ActionListener, MouseListener{
+/*
+ * 
+ * This is an old version of dashboard
+ * 
+ * Shit version
+ * 
+ */
+
+
+public class Dashboard extends JFrame implements ActionListener, MouseListener, KeyListener{
 	Colors colors = new Colors();
 	PopUp pop_up = new PopUp();
 	Database database = new Database();
@@ -94,41 +105,40 @@ public class Dashboard extends JFrame implements ActionListener, MouseListener{
 		
 		
 		
-		//Temporary for products
-		JPanel panel = new JPanel();
-		panel.setBackground(colors.colorBG);
-		panel.setLayout(new GridLayout(1, 5));
-		panel.setPreferredSize(new Dimension(500,1000));
-		
-		
-		
-		
-		JScrollPane sp = new JScrollPane(panel);
-		sp.setPreferredSize(new Dimension(500,800));
-//		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-//		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		sp.getVerticalScrollBar().setUnitIncrement(20);
 		
 		Dashboard_functions g = new Dashboard_functions();
 		ArrayList<Integer> keys = new ArrayList<Integer>();
-		ProductTemp xx = new ProductTemp();
+		ProductFunc xx = new ProductFunc();
 		keys = xx.getProdIds();
 		
+		JPanel panel = new JPanel();
+//		panel.setBounds(0,0,800,500);
 		
-		g.productDisplay(xx.getProdName(1), panel);
+		panel.setSize(new Dimension(800,11500));
+		panel.setLayout(new GridLayout(0,8,5,5));
+		panel.setOpaque(false);
 		
+		g.productDisplay(xx.getProdName(1), panel, 1);
 		
 		for(int i: keys) {
-			System.out.println(xx.getProdName(i));
-			g.productDisplay(xx.getProdName(i), panel);
+			g.productDisplay(xx.getProdName(i), panel, i);
 		}
 		
-		sp.add(panel);
-		center.add(sp, BorderLayout.CENTER);
+		JScrollPane sp = new JScrollPane(panel);
+		sp.setSize(new Dimension(800,1500));
+		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		sp.getVerticalScrollBar().setUnitIncrement(20);
+		sp.setBackground(colors.maPinkPink);
+		sp.setOpaque(true);
+//		sp.setViewportView(panel);
+//		sp.add(panel);
+		
+		panel.setSize(panel.getParent().getSize());
+		center.add(sp);
 		
 		
-		
-		
+		//Bottom components
 		for(int i = 1; i <= 7; i++) {
 			String x = "" + i;
 			g.testButton(x, bottom);
@@ -206,6 +216,24 @@ public class Dashboard extends JFrame implements ActionListener, MouseListener{
 
 	@Override
 	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void keyTyped(KeyEvent e) {	
+	}
+
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		
+	}
+
+
+	@Override
+	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
 		
 	}

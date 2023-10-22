@@ -8,10 +8,7 @@ public class PopUp {
 	
 	
 	public void message(String message) {
-		JFrame frame = new JFrame();
-		frame.setBounds(0,0,400,200);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
+		JOptionPane.showMessageDialog(null, message);
 	}
 	
 	public void popUp(JFrame parent,String message) {

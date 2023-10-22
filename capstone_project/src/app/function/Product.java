@@ -5,9 +5,6 @@ public class Product {
 	private int productId;
 	private double productPrice;
 	private int productQuantity;
-	Product(){
-		
-	}
 	
 	//Setters
 	void setProductDetails(int id, String name, double price, int quantity){
@@ -16,6 +13,8 @@ public class Product {
 		this.productPrice = price;
 		this.productQuantity = quantity;
 	}
+	
+	
 	
 	//Getters
 	int getProductId() {

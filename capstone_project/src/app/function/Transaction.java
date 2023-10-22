@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 // Called for every transaction of customers
 public class Transaction {
-	ProductTemp prod = new ProductTemp();
+	ProductFunc prod = new ProductFunc();
 	double totalPrice;
 	double receivedCash;
 	double change;
@@ -23,6 +23,10 @@ public class Transaction {
 		totalPrice = prod.getProductPrice(id) * qtty;
 		
 		System.out.println("Product Added");
+	}
+	
+	void modifyProductQuantity(int id, int new_qtty) {
+		cartContents.replace(id, null, new_qtty);
 	}
 	
 	

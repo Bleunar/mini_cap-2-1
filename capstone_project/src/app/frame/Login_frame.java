@@ -165,12 +165,12 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 				if(isAdmin) {
 					pop_up.popUp(null, "Successfuly Logged In, Admin");
 					this.setVisible(false); // change to close the frame
-					new Dashboard(getUname);
+					new Dashboarded();
 					db.close();
 				} else {
 					pop_up.popUp(null, "Successfuly Logged In, Employee");
 					this.setVisible(false); // change to close the frame
-					new Dashboard(getUname);
+					new Dashboarded();
 				}
 				
 			} else {

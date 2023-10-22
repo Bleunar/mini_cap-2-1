@@ -20,9 +20,9 @@ public class Dashboard_functions{
 	
 	
 	// Display all products onto the dashboard
-	public void productDisplay(String name, JPanel container) {
+	public void productDisplay(String name, JPanel container, int id) {
 		JButton x = new JButton(name);
-		x.setSize(new Dimension(150,100));
+		x.setBounds(0,0,100,50);
 		x.addActionListener(new ActionListener() {
 		    @Override
 		    public void actionPerformed(ActionEvent evt) {
@@ -30,7 +30,6 @@ public class Dashboard_functions{
 		    }
 		});
 		container.add(x);
-		System.out.println("Added button");
 	}
 	
 	public void testButton(String iter, JPanel parent) {
