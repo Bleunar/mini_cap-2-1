@@ -28,7 +28,7 @@ public class Database extends Databased{
 	
 	
 	public ResultSet getProducts() {
-		return this.getAvailableProducts();
+		return getAvailableProducts();
 	}
 	
 	public HashMap<Integer, String> getCategories(){
@@ -49,6 +49,10 @@ public class Database extends Databased{
 		} else {
 			return false;
 		}
+	}
+	
+	public ResultSet getProductsPerCategory(int category_id) {
+		return getProdPerCateg(category_id);
 	}
 	
 	public void close() {
@@ -186,7 +190,6 @@ class Databased {
 			e.printStackTrace();
 			return false;
 		}
-
 	}
 	
 	protected HashMap<Integer, String> getCategoriesDB() {
@@ -197,12 +200,15 @@ class Databased {
 			while(res.next()) {
 				retorn.put(res.getInt("category_id"), res.getString("category_name"));
 			}
-			
 			return retorn;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
-		
+	}
+	
+	protected ResultSet getProdPerCateg(int category_id) {
+		String query = "select * from products where category_id = " + category_id + ";";
+		return db_query(query);
 	}
 }

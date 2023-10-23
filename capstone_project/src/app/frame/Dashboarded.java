@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -25,6 +26,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import app.database.Database;
+import app.function.Product;
+import app.function.ProductButton;
+import app.function.Transaction;
+import app.function.WheelPanel;
 import app.misc.Colors;
 import app.misc.FontSize;
 import app.misc.PopUp;
@@ -37,10 +42,22 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	private PopUp popup = new PopUp();
 	private Screen sc = new Screen();
 	private KeyBind key = new KeyBind();
+	Transaction t = new Transaction();
+	private WheelPanel wp = new WheelPanel(t);
 	
 	//JMenuOptions
 	JMenuItem view_toggleDarkMode;
 	JMenuItem opt_exit;
+	
+	//eastPaneN
+	JLabel productCategory = new JLabel("---");
+	
+	
+	//eastPaneS Content
+	JPanel eastPaneN;
+	JPanel eastPaneS;
+	
+	JPanel categoryPane = wp.getPane();
 	
 	//southPaneWW Components
 	JButton a;
@@ -77,6 +94,9 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		this.setFocusable(true);
 		this.requestFocus();
 	    this.addKeyListener(key);
+	    
+	    
+	    //To refocus back on the frame
 	    JFrame frame = this;
 	    this.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {}
@@ -171,22 +191,32 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	
 	private void eastPaneContents(JPanel parent) {
 		
-		JPanel eastPaneN = new JPanel();
-		int n = (int)((sc.getScreenHeight()-200) * 0.1);
+		eastPaneN = new JPanel();
+		int n = (int)((sc.getScreenHeight()-200) * 0.07);
 		eastPaneN.setPreferredSize(new Dimension(0, n));
 		eastPaneN.setLayout(new FlowLayout(FlowLayout.LEADING));
 		eastPaneN.setBackground(colors.app4);
-		;
+		eastPaneN.setBorder(BorderFactory.createLineBorder(Color.black));
+		eastPaneNContents(eastPaneN);
 		
-		JPanel eastPaneS = new JPanel();
-		int s = (int)((sc.getScreenHeight()-200) * 0.9);
+		eastPaneS = new JPanel();
+		int s = (int)((sc.getScreenHeight()-200) * 0.88);
 		eastPaneS.setPreferredSize(new Dimension(0,s));
 		eastPaneS.setLayout(new BorderLayout());
 		eastPaneS.setBackground(colors.app4);
+		eastPaneSContents(eastPaneS);
 		
 		parent.add(eastPaneN, BorderLayout.NORTH);
 		parent.add(eastPaneS, BorderLayout.SOUTH);
-		
+	}
+	private void eastPaneNContents(JPanel parent) {
+		wp.updateJLabel(productCategory);
+		parent.add(productCategory, BorderLayout.CENTER);
+	}
+	
+	private void eastPaneSContents(JPanel parent) {
+		wp.updatePane(categoryPane);
+		parent.add(categoryPane, BorderLayout.CENTER);
 	}
 	
 	private void southPaneContents(JPanel parent) {
@@ -255,6 +285,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		parent.add(pay);
 	}
 	
+	// Navigation for Product Category Panel
 	private void southPaneEContents(JPanel parent) {
 		JLabel prev = new JLabel("Previous");
 		
@@ -317,6 +348,12 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
  
         this.setJMenuBar(menuBar);
 	}
+	
+	/*
+	 * 
+	 * ActionListeners for Buttons and Panels
+	 * 	
+	 */
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -339,14 +376,38 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		if(e.getSource()==pay) System.out.println("Pay Button Pressed");
 	}
 
+	
+	//MouseListeners
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if(e.getSource()==next) {
-			popup.message("Next Button Pressed");
+			System.out.println(wp.getCurrentCategory());
+			wp.nextButton();
+			wp.updateJLabel(productCategory);
+			categoryPane = wp.getPane();
+			wp.updatePane(categoryPane);
+			
+			this.remove(categoryPane);
+			categoryPane = wp.getPane();
+			
+			this.add(categoryPane);
+			this.revalidate();
+			this.repaint();
+			
 		} else if (e.getSource()==previous){
-			popup.message("Previous Button Pressed");
+			System.out.println(wp.getCurrentCategory());
+			wp.previousButton();
+			wp.updateJLabel(productCategory);
+			
+			this.remove(categoryPane);
+			categoryPane = wp.getPane();
+			this.add(categoryPane);
+			this.revalidate();
+			this.repaint();
+			
 		}
+		
 		
 	}
 
@@ -379,9 +440,17 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	}
 }
 
-
+// Keyboard Listenrs / Keybinds
 class KeyBind implements KeyListener{
 	private PopUp popup = new PopUp();
+	
+	JPanel comp1;
+	JPanel comp2;
+	
+	void getComponents(JPanel p1, JPanel p2) {
+		this.comp1 = p1;
+		this.comp2 = p2;
+	}
 	
 	@Override
     public void keyPressed(KeyEvent e) {
@@ -389,6 +458,10 @@ class KeyBind implements KeyListener{
        
        	if(key==KeyEvent.VK_ESCAPE) {
     	   	if(popup.popUpPrompt(null, "Exit Program?")==0) System.exit(0);
+       	}
+       	
+       	if(key==KeyEvent.VK_LEFT) {
+       		
        	}
 	}
 

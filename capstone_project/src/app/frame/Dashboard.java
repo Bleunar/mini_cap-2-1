@@ -19,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import app.database.Database;
-import app.function.ProductFunc;
+import app.function.ProductMain;
 import app.misc.Colors;
 import app.misc.Dashboard_functions;
 import app.misc.PopUp;
@@ -108,8 +108,8 @@ public class Dashboard extends JFrame implements ActionListener, MouseListener, 
 		
 		Dashboard_functions g = new Dashboard_functions();
 		ArrayList<Integer> keys = new ArrayList<Integer>();
-		ProductFunc xx = new ProductFunc();
-		keys = xx.getProdIds();
+		ProductMain xx = new ProductMain();
+		keys = xx.getAllProductIDs();
 		
 		JPanel panel = new JPanel();
 //		panel.setBounds(0,0,800,500);

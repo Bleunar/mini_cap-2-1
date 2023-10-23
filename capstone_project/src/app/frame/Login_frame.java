@@ -198,7 +198,9 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 		int key = e.getKeyCode();
 
 	    if (key == KeyEvent.VK_ENTER) {
-	        if(String.valueOf(pword.getPassword()).equals("")) {
+	        if(String.valueOf(uname.getText()).equals("") && String.valueOf(pword.getPassword()).equals("")) {
+	        	uname.requestFocusInWindow();
+	        } else if(String.valueOf(pword.getPassword()).equals("")){
 	        	pword.requestFocusInWindow();
 	        } else {
 	        	login.doClick();
