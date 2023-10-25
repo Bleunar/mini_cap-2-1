@@ -8,8 +8,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 
 public class Database extends Databased{
-	public Database(){
-	}
 	
 	public boolean authenticate_account(String username, String password) {
 		boolean verified = auth_account2(username, password);
@@ -35,9 +33,6 @@ public class Database extends Databased{
 		return getCategoriesDB();
 	}
 	
-	public void insertProduct(String name,int quantity, double price, boolean isAdmin) {
-		
-	}
 	
 	public void updateProduct(int id, int quantity) {
 		this.updateProductQtty(id, quantity);
@@ -58,11 +53,10 @@ public class Database extends Databased{
 	public void close() {
 		closeDB();
 	}
-
 }
 
-
-class Databased {
+//Abstract class to avoid object creation
+abstract class Databased {
 	private String url = "jdbc:mysql://localhost:3306/coffee37";
 	private String usernameDB = "root";
 	private String passwordDB = "";
@@ -79,11 +73,12 @@ class Databased {
 			conn = DriverManager.getConnection(url, usernameDB, passwordDB);
 			System.out.println("> Database Connection Success");
 			return true;
+		} catch (NullPointerException e) {
+			System.out.println("Error, Database is offline");
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println("> Error, Database connection");
-			return false;
 		}
+		return false;
 	}
 	
 	//Authentication prone to sql inject 
@@ -149,6 +144,7 @@ class Databased {
 	}
 	
 	//general query
+	
 	protected ResultSet db_query(String query) {
 		try {
 			Statement stmnt = conn.createStatement();
@@ -156,11 +152,12 @@ class Databased {
 			
 			return res;
 			
+		} catch (NullPointerException e) {
+			System.out.println("Database is offline");
 		} catch (Exception e) {
-			System.out.println("> Error, query");
 			e.printStackTrace();
-			return null;
 		}
+		 return null;
 	}
 	
 	protected void closeDB() {

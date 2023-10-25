@@ -36,13 +36,13 @@ import app.misc.PopUp;
 import app.misc.Screen;
 
 public class Dashboarded extends JFrame implements ActionListener, MouseListener{
+	private Transaction t = new Transaction();
 	private Database db = new Database();
 	private Colors colors = new Colors();
 	private FontSize font = new FontSize();
 	private PopUp popup = new PopUp();
 	private Screen sc = new Screen();
 	private KeyBind key = new KeyBind();
-	Transaction t = new Transaction();
 	private WheelPanel wp = new WheelPanel(t);
 	
 	//JMenuOptions
