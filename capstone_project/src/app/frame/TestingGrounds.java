@@ -1,53 +1,52 @@
 package app.frame;
 
-import java.awt.BorderLayout;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
 import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
-import app.function.Transaction;
-import app.function.WheelPanel;
-
-public class TestingGrounds extends JFrame implements KeyListener{
-	WheelPanel wp = new WheelPanel(new Transaction());
-	JPanel x;
+public class TestingGrounds extends JFrame{
+    JFrame f = new JFrame();  
 	
 	public TestingGrounds(){
-		this.setBounds(0,0,500,500);
-		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		this.setLayout(new BorderLayout());
+		init();
+		addTable();
+	}
+	
+	void init(){
+		this.setBounds(0,0,500,400);
 		this.setLocationRelativeTo(null);
-		this.setFocusable(true);
-		this.requestFocus();
 		
-		x = new JPanel();
-		x.add(wp.getPane());
-		
-		this.add(x);
 		this.setVisible(true);
-		this.addKeyListener(this);
-
 	}
+	
+	void addTable() {
+		DefaultTableModel model = new DefaultTableModel(); 
+		JTable table = new JTable(model); 
 
-	@Override
-	public void keyTyped(KeyEvent e) {
+		// insert columns
+		model.addColumn("id"); 
+		model.addColumn("name"); 
+		model.addColumn("quantity"); 
+		model.addColumn("price"); 
+
+
+		// add rows
+		model.addRow(new Object[]{"1", "Dimsum Panda", "13", "35.00",});
+		model.addRow(new Object[]{"1", "Dimsum Panda", "13", "35.00",});
+		model.addRow(new Object[]{"1", "Dimsum Panda", "13", "35.00",});
 		
 		
+		//Focus on rows
+		table.requestFocus();
+		table.changeSelection(0,0,false, false);
+	        
+		table.setBounds(30,40,200,300);
+		JScrollPane sp=new JScrollPane(table);
+		this.add(sp);
+		this.setSize(300,400);    
+	    this.setVisible(true);
+	    
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e) {
-		if(e.getKeyCode()==KeyEvent.VK_ENTER) {
-			wp.updatePane(x);
-		}
-		
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 }

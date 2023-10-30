@@ -1,9 +1,16 @@
 package app.misc;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class PopUp {
+	
+	public PopUp(){
+		Queue x = new LinkedList();
+	}
 	
 	
 	
@@ -19,5 +26,7 @@ public class PopUp {
 		int x = JOptionPane.showConfirmDialog(parent, message);
 		return x;
 	}
+	
+	
 
 }

@@ -15,8 +15,10 @@ public class Colors {
 	public Color app2 = new Color(185, 197, 232);
 	public Color app3 = new Color(51,51,51);
 	public Color app4 = new Color(135, 182, 214);
+//	public Color app4L = new Color(170, 227, 249);
 	
 	public Color app_white = new Color(230,230,230);
+	public Color app_black = new Color(20,20,20);
 	
 	public Color test1 = new Color(230,0,0);
 	public Color test2 = new Color(0,230,0);

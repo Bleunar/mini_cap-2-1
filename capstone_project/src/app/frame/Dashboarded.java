@@ -14,6 +14,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -24,40 +27,69 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 import app.database.Database;
-import app.function.Product;
-import app.function.ProductButton;
-import app.function.Transaction;
-import app.function.WheelPanel;
+import app.functions.Category;
+import app.functions.Product;
+import app.functions.Transaction;
 import app.misc.Colors;
 import app.misc.FontSize;
 import app.misc.PopUp;
 import app.misc.Screen;
 
 public class Dashboarded extends JFrame implements ActionListener, MouseListener{
-	private Transaction t = new Transaction();
-	private Database db = new Database();
+	private Database db = new Database("MainDashboard");
+	private Transaction t = new Transaction(db);
 	private Colors colors = new Colors();
 	private FontSize font = new FontSize();
 	private PopUp popup = new PopUp();
 	private Screen sc = new Screen();
-	private KeyBind key = new KeyBind();
-	private WheelPanel wp = new WheelPanel(t);
+	private KeyBind key = new KeyBind(this);
+	
+	//NorthPaneContents
+	String operator;
+	
+	JLabel time;
+	JLabel date;
+	
+	String day;
+	String month;
+	String year;
+	String week;
+	
+	
+	double total,received,change;
+	JLabel totalValue, receivedValue, changeValue;
 	
 	//JMenuOptions
 	JMenuItem view_toggleDarkMode;
 	JMenuItem opt_exit;
 	
+	//West Pane contents
+	JButton wp_1;
+	JButton wp_2;
+	JButton wp_3;
+	JButton wp_4;
+	JButton wp_5;
+	
+	DefaultTableModel model;
+	JTable table;
+	
 	//eastPaneN
-	JLabel productCategory = new JLabel("---");
+	JPanel eastPaneN;
+	JLabel category;
 	
 	
 	//eastPaneS Content
-	JPanel eastPaneN;
 	JPanel eastPaneS;
 	
-	JPanel categoryPane = wp.getPane();
+	
+	JPanel categoryPane = new JPanel();
 	
 	//southPaneWW Components
 	JButton a;
@@ -80,8 +112,21 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		setupMenuBars();
 		
 		this.setVisible(true);
+		dateTimeDisplay(); 
 	}
 
+	
+	private void dateTimeDisplay() {
+		LocalDateTime myDateObj = LocalDateTime.now();
+		
+		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+		DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("hh-mm");
+		date.setText(myDateObj.format(dateFormat));
+		time.setText(myDateObj.format(timeFormat));
+			
+	}
+	
+	
 	
 	private void setupFrame() {
 		this.setTitle("P.O.S.  |  Coffee37");
@@ -93,7 +138,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 //		this.getContentPane().setBackground(colors.itom);
 		this.setFocusable(true);
 		this.requestFocus();
-	    this.addKeyListener(key);
+		this.addKeyListener(key);
 	    
 	    
 	    //To refocus back on the frame
@@ -104,6 +149,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
             	frame.requestFocus();}
     });
 	}
+	
 	
 	private void setupPanels() {
 		JPanel northPane = new JPanel();
@@ -146,77 +192,246 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	private void northPaneContents(JPanel parent) {
 		JPanel northPaneW = new JPanel();
 		northPaneW.setPreferredSize(new Dimension(sc.getScreenWidth()/2,0));
-		northPaneW.setLayout(new BorderLayout());
+		northPaneW.setLayout(new BoxLayout(northPaneW, BoxLayout.PAGE_AXIS));
+		northPaneW.setBorder(new EmptyBorder(10, 10, 10, 10));
 		northPaneW.setBackground(colors.app3);
+		northPaneWContents(northPaneW);
 		
 		
 		JPanel northPaneE = new JPanel();
 		northPaneE.setPreferredSize(new Dimension(sc.getScreenWidth()/2,0));
-		northPaneE.setLayout(new BorderLayout());
+		northPaneE.setLayout(new BoxLayout(northPaneE, BoxLayout.PAGE_AXIS));
+		northPaneE.setBorder(new EmptyBorder(10, 10, 10, 10));
 		northPaneE.setBackground(colors.app3);
+		northPaneEContents(northPaneE);
 		
 		parent.add(northPaneW, BorderLayout.WEST);
 		parent.add(northPaneE, BorderLayout.EAST);
+	}
+	
+	private void northPaneWContents(JPanel parent) {
+		
+		JLabel title = new JLabel("COFFEE 69");
+		title.setForeground(colors.app_white);
+		title.setFont(font.titleBold);
+		JLabel branch = new JLabel("Molo, Iloilo");
+		branch.setForeground(colors.app_white);
+		branch.setFont(font.regularPlain);
+		
+		parent.add(title);
+		parent.add(branch);
+	}
+	
+	private void northPaneEContents(JPanel parent) {
+		JPanel contain = new JPanel();
+		contain.setLayout(new BorderLayout());
+		contain.setOpaque(false);
+		
+		//TODO operator name
+		operator = "Jhonny Sins";
+		
+		JLabel operatorLabel = new JLabel("Operator: " + operator, SwingConstants.TRAILING);
+		operatorLabel.setForeground(colors.app_white);
+		operatorLabel.setFont(font.regularBold);
+		operatorLabel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+		
+		date = new JLabel("", SwingConstants.TRAILING);
+		date.setForeground(colors.app_white);
+		date.setFont(font.regularPlain);
+		date.setLayout(new FlowLayout(FlowLayout.TRAILING));
+		
+		
+		time = new JLabel("", SwingConstants.TRAILING);
+		time.setForeground(colors.app_white);
+		time.setFont(font.regularPlain);
+		time.setLayout(new FlowLayout(FlowLayout.TRAILING));
+		
+		contain.add(operatorLabel, BorderLayout.NORTH);
+		contain.add(date, BorderLayout.EAST);
+		contain.add(time, BorderLayout.SOUTH);
+		
+		parent.add(contain);
 	}
 	
 	
 	//Contains the panels for the west pane
 	private void westPaneContents(JPanel parent) {
 		JPanel westPaneN = new JPanel();
-		int n = (int) ((int)(sc.getScreenHeight()-200)*0.33);
+		int n = (int) ((int)(sc.getScreenHeight()-200)*0.25);
 		westPaneN.setPreferredSize(new Dimension(0,n));
-		westPaneN.setLayout(null); 									// Revisit layout
+		westPaneN.setLayout(new BorderLayout()); 									// Revisit layout
 		westPaneN.setBackground(colors.app1L);
 		westPaneN.setBorder(BorderFactory.createLineBorder(Color.black));
+		westPaneN.setBorder(new EmptyBorder(10, 10, 10, 10));
+		westPaneNContents(westPaneN);
 		
 		JPanel westPaneW = new JPanel();
 		int w = (int) ((int) (sc.getScreenWidth()/2)*0.75); // calculates the size of the pane in relation to screen width  
 		westPaneW.setPreferredSize(new Dimension(w,0));
-		westPaneW.setLayout(null); 									// Revisit layout
+		westPaneW.setLayout(new BorderLayout());
 		westPaneW.setBackground(colors.app1);
 		westPaneW.setBorder(BorderFactory.createLineBorder(Color.black));
+		westPaneWContents(westPaneW);
 		
 		JPanel westPaneE = new JPanel();
 		int e = (int) ((int) (sc.getScreenWidth()/2)*0.25); // calculates the size of the pane in relation to screen width 
 		westPaneE.setPreferredSize(new Dimension(e,0));
-		westPaneE.setLayout(new GridLayout(5,1,0,0)); 									// Revisit layout
+		westPaneE.setLayout(new GridLayout()); 									// Revisit layout
 		westPaneE.setBackground(colors.app1);
 		westPaneE.setBorder(BorderFactory.createLineBorder(Color.black));
+		westPaneEContents(westPaneE);
 		
 		parent.add(westPaneN, BorderLayout.NORTH);
 		parent.add(westPaneW, BorderLayout.WEST);
 		parent.add(westPaneE, BorderLayout.EAST);
 	}
 	
+	private void westPaneNContents(JPanel parent){
+		
+		//TODO remove this
+		this.total = 450.00;
+		this.received = 500.00;
+		this.change = 50.00;
+
+		int half = sc.getScreenWidth()/2;
+		
+		JPanel west = new JPanel();
+		west.setPreferredSize(new Dimension(half/2, 0));
+		west.setLayout(new GridLayout(3,1));
+		west.setOpaque(false);
+		
+		JLabel total = new JLabel("Total", SwingConstants.LEADING);
+		total.setFont(font.regularPlain);
+		total.setForeground(colors.app_black);
+		west.add(total);
+
+		JLabel received = new JLabel("Received", SwingConstants.LEADING);
+		received.setFont(font.regularPlain);
+		received.setForeground(colors.app_black);
+		west.add(received);
+		
+		JLabel change = new JLabel("Change", SwingConstants.LEADING);
+		change.setFont(font.regularPlain);
+		change.setForeground(colors.app_black);
+		west.add(change);
+	
+		JPanel east = new JPanel();
+		east.setPreferredSize(new Dimension(half/2, 0));
+		east.setLayout(new GridLayout(3,1));
+		east.setOpaque(false);
+		
+		totalValue = new JLabel("₱" + this.total, SwingConstants.TRAILING);
+		totalValue.setFont(font.mediumBold);
+		totalValue.setForeground(colors.app_black);
+		east.add(totalValue);
+
+		receivedValue = new JLabel("₱" + this.received, SwingConstants.TRAILING);
+		receivedValue.setFont(font.mediumBold);
+		receivedValue.setForeground(colors.app_black);
+		east.add(receivedValue);
+		
+		changeValue = new JLabel("₱"+ this.change , SwingConstants.TRAILING);
+		changeValue.setFont(font.mediumBold);
+		changeValue.setForeground(colors.app_black);
+		east.add(changeValue);
+	
+		parent.add(west, BorderLayout.WEST);
+		parent.add(east, BorderLayout.EAST);
+	}
+	
+	private void westPaneWContents(JPanel parent) {
+		model = new DefaultTableModel(); 
+		table = new JTable(model); 
+
+		// insert columns
+		model.addColumn("id"); 
+		model.addColumn("name"); 
+		model.addColumn("quantity"); 
+		model.addColumn("price"); 
+		
+		
+		//Focus on rows
+		table.requestFocus();
+//		table.changeSelection(0,0,false, false);
+	        
+		table.setBounds(30,40,200,300);
+		JScrollPane sp=new JScrollPane(table);
+		parent.add(sp, BorderLayout.CENTER);
+		
+		t.setModel(model);
+	}
+	
+	private void westPaneEContents(JPanel parent) {
+		JPanel container = new JPanel();
+		container.setLayout(new GridLayout(5,1));
+		container.setBorder(BorderFactory.createLineBorder(Color.black));
+		
+		wp_1 = new JButton("-----");
+		wp_1.addActionListener(this);	
+		
+		wp_2 = new JButton("-----");
+		wp_2.addActionListener(this);	
+		
+		wp_3 = new JButton("-----");
+		wp_3.addActionListener(this);	
+		
+		wp_4 = new JButton("-----");
+		wp_4.addActionListener(this);	
+		
+		wp_5 = new JButton("-----");
+		wp_5.addActionListener(this);	
+		
+		container.add(wp_1);
+		container.add(wp_2);
+		container.add(wp_3);
+		container.add(wp_4);
+		container.add(wp_5);
+		
+		parent.add(container);
+		
+		
+	}
 	
 	private void eastPaneContents(JPanel parent) {
 		
 		eastPaneN = new JPanel();
-		int n = (int)((sc.getScreenHeight()-200) * 0.07);
+		int n = (int)((sc.getScreenHeight()-200) * 0.06);
 		eastPaneN.setPreferredSize(new Dimension(0, n));
-		eastPaneN.setLayout(new FlowLayout(FlowLayout.LEADING));
+		eastPaneN.setLayout(new BorderLayout());
 		eastPaneN.setBackground(colors.app4);
 		eastPaneN.setBorder(BorderFactory.createLineBorder(Color.black));
 		eastPaneNContents(eastPaneN);
 		
 		eastPaneS = new JPanel();
-		int s = (int)((sc.getScreenHeight()-200) * 0.88);
+		int s = (int)((sc.getScreenHeight()-200) * 0.90);
 		eastPaneS.setPreferredSize(new Dimension(0,s));
 		eastPaneS.setLayout(new BorderLayout());
-		eastPaneS.setBackground(colors.app4);
+		eastPaneS.setBackground(colors.app_white);
 		eastPaneSContents(eastPaneS);
 		
 		parent.add(eastPaneN, BorderLayout.NORTH);
 		parent.add(eastPaneS, BorderLayout.SOUTH);
 	}
 	private void eastPaneNContents(JPanel parent) {
-		wp.updateJLabel(productCategory);
-		parent.add(productCategory, BorderLayout.CENTER);
+		category = new JLabel("", SwingConstants.LEADING);
+		category.setFont(font.regularBold);
+		category.setForeground(colors.app_black);
+		category.setBorder(new EmptyBorder(10, 10, 10, 10));
+		parent.add(category, BorderLayout.CENTER);
 	}
 	
 	private void eastPaneSContents(JPanel parent) {
-		wp.updatePane(categoryPane);
-		parent.add(categoryPane, BorderLayout.CENTER);
+		JPanel container = new JPanel();
+		container.setLayout(new FlowLayout(FlowLayout.LEADING));
+		
+		Category categ = new Category(1, db, t);
+		
+		for(Product kkk: categ.getProducts()) {
+			container.add(kkk.getButton());
+		}
+		
+		
+		parent.add(container, BorderLayout.CENTER);
 	}
 	
 	private void southPaneContents(JPanel parent) {
@@ -224,6 +439,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		southPaneW.setPreferredSize(new Dimension(sc.getScreenWidth()/2,0));
 		southPaneW.setLayout(new BorderLayout());
 		southPaneW.setBackground(colors.itom);
+		southPaneW.setBorder(BorderFactory.createLineBorder(Color.black));
 		southPaneWContents(southPaneW);
 		
 		
@@ -231,6 +447,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		southPaneE.setPreferredSize(new Dimension(sc.getScreenWidth()/2,0));
 		southPaneE.setLayout(new BorderLayout());
 		southPaneE.setBackground(colors.itom);
+		southPaneE.setBorder(BorderFactory.createLineBorder(Color.black));
 		southPaneEContents(southPaneE);
 		
 		parent.add(southPaneW, BorderLayout.WEST);
@@ -258,7 +475,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	
 	private void southPaneWWContents(JPanel parent){
 		a= new JButton("Promos");
-		a.addActionListener(this);
+		a.addActionListener(this);	
 		b = new JButton("Discounts");
 		b.addActionListener(this);
 		c = new JButton("Payment Method");
@@ -382,29 +599,12 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if(e.getSource()==next) {
-			System.out.println(wp.getCurrentCategory());
-			wp.nextButton();
-			wp.updateJLabel(productCategory);
-			categoryPane = wp.getPane();
-			wp.updatePane(categoryPane);
-			
-			this.remove(categoryPane);
-			categoryPane = wp.getPane();
-			
-			this.add(categoryPane);
-			this.revalidate();
-			this.repaint();
+			System.out.println("Next");
+			this.category.setText("Tae");
 			
 		} else if (e.getSource()==previous){
-			System.out.println(wp.getCurrentCategory());
-			wp.previousButton();
-			wp.updateJLabel(productCategory);
-			
-			this.remove(categoryPane);
-			categoryPane = wp.getPane();
-			this.add(categoryPane);
-			this.revalidate();
-			this.repaint();
+			System.out.println("Previous");
+			this.category.setText("AFAG");
 			
 		}
 		
@@ -443,13 +643,16 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 // Keyboard Listenrs / Keybinds
 class KeyBind implements KeyListener{
 	private PopUp popup = new PopUp();
+	ArrayList<JButton> buttons = new ArrayList<JButton>();
+	ArrayList<JLabel> labels = new ArrayList<JLabel>();
 	
-	JPanel comp1;
-	JPanel comp2;
+	// to compare imported components
+	JLabel label = new JLabel();
+	JButton button = new JButton();
 	
-	void getComponents(JPanel p1, JPanel p2) {
-		this.comp1 = p1;
-		this.comp2 = p2;
+	
+	public KeyBind(Dashboarded dashboarded) {
+		// TODO Auto-generated constructor stub
 	}
 	
 	@Override
@@ -457,11 +660,16 @@ class KeyBind implements KeyListener{
 		int key = e.getKeyCode();
        
        	if(key==KeyEvent.VK_ESCAPE) {
-    	   	if(popup.popUpPrompt(null, "Exit Program?")==0) System.exit(0);
+       		int x = popup.popUpPrompt(null, "Exit Program?");
+       		System.out.println(x);
+    	   	if(x==0) {
+    	   		System.exit(0);
+    	   	}
        	}
        	
-       	if(key==KeyEvent.VK_LEFT) {
-       		
+       	
+       	
+       	if(key==KeyEvent.VK_SPACE) {
        	}
 	}
 

@@ -15,7 +15,7 @@ import app.misc.Colors;
 
 public class Dashboard_admin extends JFrame implements ActionListener, MouseListener{
 	Colors colors = new Colors();
-	Database db = new Database();
+	Database db = new Database("dbAdmin");
 	
 	//Top Components
 	JPanel topBorder = new JPanel();

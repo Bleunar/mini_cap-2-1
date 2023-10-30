@@ -25,7 +25,7 @@ import app.misc.FontSize;
 import app.misc.PopUp;
 
 public class Login_frame extends JFrame implements ActionListener, KeyListener{
-	Database db = new Database();
+	Database db = new Database("Login");
 	FontSize font = new FontSize();
 	
 	private JPanel x = new JPanel();

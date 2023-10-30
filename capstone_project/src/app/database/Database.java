@@ -5,9 +5,16 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import app.functions.Product;
+
 public class Database extends Databased{
+	
+	public Database(String source){
+		System.out.println(source);
+	}
 	
 	public boolean authenticate_account(String username, String password) {
 		boolean verified = auth_account2(username, password);
@@ -52,6 +59,10 @@ public class Database extends Databased{
 	
 	public void close() {
 		closeDB();
+	}
+	
+	public ArrayList<Product> getProductsInCategory(int categ) {
+		return getProductsInCateg(categ);
 	}
 }
 
@@ -207,5 +218,24 @@ abstract class Databased {
 	protected ResultSet getProdPerCateg(int category_id) {
 		String query = "select * from products where category_id = " + category_id + ";";
 		return db_query(query);
+	}
+	
+	protected ArrayList<Product> getProductsInCateg(int category){
+		ArrayList<Product> products = new ArrayList<Product>();
+		try {
+			String query = "SELECT * FROM products WHERE category_id = '"+category+"' AND prod_isAvailable";
+			System.out.println(query);
+			Statement stmnt = conn.createStatement();
+			ResultSet result = stmnt.executeQuery(query);
+			
+			while(result.next()) {
+				products.add(new Product(result.getInt("prod_id"), result.getString("prod_name"), result.getDouble("prod_price"), result.getInt("prod_quantity")));
+				System.out.println("> Product added - " + result.getString("prod_name"));
+			}
+			return products;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
