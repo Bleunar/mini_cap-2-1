@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -26,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -37,22 +39,25 @@ import app.database.Database;
 import app.functions.Category;
 import app.functions.Product;
 import app.functions.Transaction;
+import app.functions.Category_control;
 import app.misc.Colors;
 import app.misc.FontSize;
 import app.misc.PopUp;
 import app.misc.Screen;
 
 public class Dashboarded extends JFrame implements ActionListener, MouseListener{
-	private Database db = new Database("MainDashboard");
-	private Transaction t = new Transaction(db);
+	private Database db = new Database();
+	private Transaction t = new Transaction(db, this);
 	private Colors colors = new Colors();
 	private FontSize font = new FontSize();
 	private PopUp popup = new PopUp();
 	private Screen sc = new Screen();
 	private KeyBind key = new KeyBind(this);
+	private Category_control categoryControl = new Category_control(db, t);
 	
 	//NorthPaneContents
-	String operator;
+	String operator_username; //id of operator
+	String operator_name; //name of operator
 	
 	JLabel time;
 	JLabel date;
@@ -62,15 +67,14 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	String year;
 	String week;
 	
-	
-	double total,received,change;
-	JLabel totalValue, receivedValue, changeValue;
-	
 	//JMenuOptions
 	JMenuItem view_toggleDarkMode;
 	JMenuItem opt_exit;
 	
 	//West Pane contents
+	double total,received,change;
+	public JLabel totalValue, receivedValue, changeValue;
+	
 	JButton wp_1;
 	JButton wp_2;
 	JButton wp_3;
@@ -85,37 +89,34 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	JLabel category;
 	
 	
-	//eastPaneS Content
-	JPanel eastPaneS;
-	
-	
-	JPanel categoryPane = new JPanel();
+	//eastPaneS Contents
+	JPanel productContainer;
 	
 	//southPaneWW Components
-	JButton a;
-	JButton b;
-	JButton c;
-	JButton d;
-	JButton ee;
-	JButton f;
+	JButton sww_1;
+	JButton sww_2;
+	JButton sww_3;
+	JButton sww_4;
+	JButton sww_5;
+	JButton sww_6;
 	
 	//southPaneWE Components
-	JButton pay;
+	JButton end;
 	
 	//southPaneE Components
 	JPanel previous;
 	JPanel next;
 	
-	public Dashboarded(){
+	public Dashboarded(String username){
+		setOperator(username);
 		setupFrame();
 		setupPanels();
 		setupMenuBars();
-		
-		this.setVisible(true);
 		dateTimeDisplay(); 
+		this.setVisible(true);
 	}
 
-	
+	// Display date and time
 	private void dateTimeDisplay() {
 		LocalDateTime myDateObj = LocalDateTime.now();
 		
@@ -123,25 +124,35 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("hh-mm");
 		date.setText(myDateObj.format(dateFormat));
 		time.setText(myDateObj.format(timeFormat));
-			
+	}
+	
+	public void updateMoney() {
+		this.totalValue.setText("₱"+ t.getCurrentTotal());
+		this.receivedValue.setText("₱"+ t.getCurrentReceived());
+		this.changeValue.setText("₱"+ t.getCurrentChange());
+		
+		System.out.println("> money opdated");
+	}
+	
+	//Set operator
+	public void setOperator(String username) {
+		this.operator_username = username;
+		this.operator_name = db.getEmployeeName(this.operator_username);
 	}
 	
 	
 	
 	private void setupFrame() {
-		this.setTitle("P.O.S.  |  Coffee37");
-//		this.setSize(new Dimension(sc.getScreenWidth(), sc.getScreenHeight()));
 		this.setUndecorated(true);
-		this.setLocationRelativeTo(null); //center frame relative to screen
+		this.setLocationRelativeTo(null); //center frame relative to screen, not used
 		this.setLayout(new BorderLayout());
 		this.setExtendedState(JFrame.MAXIMIZED_BOTH); //forda full screen;
-//		this.getContentPane().setBackground(colors.itom);
 		this.setFocusable(true);
 		this.requestFocus();
 		this.addKeyListener(key);
 	    
 	    
-	    //To refocus back on the frame
+	    //To refocus back on the frame, to make key binds function
 	    JFrame frame = this;
 	    this.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {}
@@ -150,7 +161,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
     });
 	}
 	
-	
+	//Setup the main panels
 	private void setupPanels() {
 		JPanel northPane = new JPanel();
 		JPanel westPane = new JPanel();
@@ -227,10 +238,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		contain.setLayout(new BorderLayout());
 		contain.setOpaque(false);
 		
-		//TODO operator name
-		operator = "Jhonny Sins";
-		
-		JLabel operatorLabel = new JLabel("Operator: " + operator, SwingConstants.TRAILING);
+		JLabel operatorLabel = new JLabel("Operator: " + this.operator_name, SwingConstants.TRAILING);
 		operatorLabel.setForeground(colors.app_white);
 		operatorLabel.setFont(font.regularBold);
 		operatorLabel.setLayout(new FlowLayout(FlowLayout.TRAILING));
@@ -259,8 +267,8 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		JPanel westPaneN = new JPanel();
 		int n = (int) ((int)(sc.getScreenHeight()-200)*0.25);
 		westPaneN.setPreferredSize(new Dimension(0,n));
-		westPaneN.setLayout(new BorderLayout()); 									// Revisit layout
-		westPaneN.setBackground(colors.app1L);
+		westPaneN.setLayout(new BorderLayout());
+		westPaneN.setBackground(colors.app4);
 		westPaneN.setBorder(BorderFactory.createLineBorder(Color.black));
 		westPaneN.setBorder(new EmptyBorder(10, 10, 10, 10));
 		westPaneNContents(westPaneN);
@@ -276,7 +284,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		JPanel westPaneE = new JPanel();
 		int e = (int) ((int) (sc.getScreenWidth()/2)*0.25); // calculates the size of the pane in relation to screen width 
 		westPaneE.setPreferredSize(new Dimension(e,0));
-		westPaneE.setLayout(new GridLayout()); 									// Revisit layout
+		westPaneE.setLayout(new GridLayout());
 		westPaneE.setBackground(colors.app1);
 		westPaneE.setBorder(BorderFactory.createLineBorder(Color.black));
 		westPaneEContents(westPaneE);
@@ -310,7 +318,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		received.setForeground(colors.app_black);
 		west.add(received);
 		
-		JLabel change = new JLabel("Change", SwingConstants.LEADING);
+		JLabel change = new JLabel("Discount", SwingConstants.LEADING);
 		change.setFont(font.regularPlain);
 		change.setForeground(colors.app_black);
 		west.add(change);
@@ -320,17 +328,17 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		east.setLayout(new GridLayout(3,1));
 		east.setOpaque(false);
 		
-		totalValue = new JLabel("₱" + this.total, SwingConstants.TRAILING);
+		totalValue = new JLabel("₱" + t.getCurrentTotal() , SwingConstants.TRAILING);
 		totalValue.setFont(font.mediumBold);
 		totalValue.setForeground(colors.app_black);
 		east.add(totalValue);
 
-		receivedValue = new JLabel("₱" + this.received, SwingConstants.TRAILING);
+		receivedValue = new JLabel("₱" + t.getCurrentChange() , SwingConstants.TRAILING);
 		receivedValue.setFont(font.mediumBold);
 		receivedValue.setForeground(colors.app_black);
 		east.add(receivedValue);
 		
-		changeValue = new JLabel("₱"+ this.change , SwingConstants.TRAILING);
+		changeValue = new JLabel("₱"+ t.getCurrentChange() , SwingConstants.TRAILING);
 		changeValue.setFont(font.mediumBold);
 		changeValue.setForeground(colors.app_black);
 		east.add(changeValue);
@@ -342,22 +350,20 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	private void westPaneWContents(JPanel parent) {
 		model = new DefaultTableModel(); 
 		table = new JTable(model); 
-
+		
 		// insert columns
-		model.addColumn("id"); 
-		model.addColumn("name"); 
-		model.addColumn("quantity"); 
-		model.addColumn("price"); 
+		model.addColumn("ID"); 
+		model.addColumn("Name"); 
+		model.addColumn("Price"); 
+		model.addColumn("Quantity"); 
 		
+		table.setFont(new Font("Arial", Font.BOLD, 12));
 		
-		//Focus on rows
-		table.requestFocus();
-//		table.changeSelection(0,0,false, false);
-	        
+		table.requestFocus(); //Focus on rows
 		table.setBounds(30,40,200,300);
-		JScrollPane sp=new JScrollPane(table);
+		JScrollPane sp = new JScrollPane(table);
 		parent.add(sp, BorderLayout.CENTER);
-		
+		table.addFocusListener(null);
 		t.setModel(model);
 	}
 	
@@ -366,19 +372,19 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		container.setLayout(new GridLayout(5,1));
 		container.setBorder(BorderFactory.createLineBorder(Color.black));
 		
-		wp_1 = new JButton("-----");
+		wp_1 = new JButton("Delete Product");
 		wp_1.addActionListener(this);	
 		
-		wp_2 = new JButton("-----");
+		wp_2 = new JButton("Modify Quantity");
 		wp_2.addActionListener(this);	
 		
-		wp_3 = new JButton("-----");
+		wp_3 = new JButton("Add 1");
 		wp_3.addActionListener(this);	
 		
-		wp_4 = new JButton("-----");
+		wp_4 = new JButton("Less 1");
 		wp_4.addActionListener(this);	
 		
-		wp_5 = new JButton("-----");
+		wp_5 = new JButton("Clear Cart");
 		wp_5.addActionListener(this);	
 		
 		container.add(wp_1);
@@ -394,7 +400,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	
 	private void eastPaneContents(JPanel parent) {
 		
-		eastPaneN = new JPanel();
+		JPanel eastPaneN = new JPanel();
 		int n = (int)((sc.getScreenHeight()-200) * 0.06);
 		eastPaneN.setPreferredSize(new Dimension(0, n));
 		eastPaneN.setLayout(new BorderLayout());
@@ -402,7 +408,7 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		eastPaneN.setBorder(BorderFactory.createLineBorder(Color.black));
 		eastPaneNContents(eastPaneN);
 		
-		eastPaneS = new JPanel();
+		JPanel eastPaneS = new JPanel();
 		int s = (int)((sc.getScreenHeight()-200) * 0.90);
 		eastPaneS.setPreferredSize(new Dimension(0,s));
 		eastPaneS.setLayout(new BorderLayout());
@@ -413,25 +419,23 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 		parent.add(eastPaneS, BorderLayout.SOUTH);
 	}
 	private void eastPaneNContents(JPanel parent) {
-		category = new JLabel("", SwingConstants.LEADING);
+		category = new JLabel(categoryControl.getCurrentCategoryName(), SwingConstants.LEADING);
 		category.setFont(font.regularBold);
 		category.setForeground(colors.app_black);
 		category.setBorder(new EmptyBorder(10, 10, 10, 10));
+		category.setText(categoryControl.getCurrentCategoryName().toUpperCase());
+		
 		parent.add(category, BorderLayout.CENTER);
 	}
 	
 	private void eastPaneSContents(JPanel parent) {
-		JPanel container = new JPanel();
-		container.setLayout(new FlowLayout(FlowLayout.LEADING));
+		productContainer = new JPanel();
+		productContainer.setLayout(new FlowLayout(FlowLayout.LEADING));
 		
-		Category categ = new Category(1, db, t);
-		
-		for(Product kkk: categ.getProducts()) {
-			container.add(kkk.getButton());
+		for(Product kkk: categoryControl.getCurrentCategoryProducts()) {
+			productContainer.add(kkk.getButton());
 		}
-		
-		
-		parent.add(container, BorderLayout.CENTER);
+		parent.add(productContainer, BorderLayout.CENTER);
 	}
 	
 	private void southPaneContents(JPanel parent) {
@@ -474,32 +478,37 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	}
 	
 	private void southPaneWWContents(JPanel parent){
-		a= new JButton("Promos");
-		a.addActionListener(this);	
-		b = new JButton("Discounts");
-		b.addActionListener(this);
-		c = new JButton("Payment Method");
-		c.addActionListener(this);
-		d = new JButton("Search Product");
-		d.addActionListener(this);
-		ee = new JButton("-----------");
-		ee.addActionListener(this);
-		f = new JButton("Help");
-		f.addActionListener(this);
+		sww_1 = new JButton("Apply Promos");
+		sww_1.addActionListener(this);	
+		
+		sww_2 = new JButton("Apply Discounts");
+		sww_2.addActionListener(this);
+		
+		sww_3 = new JButton("Add Product Manualy");
+		sww_3.addActionListener(this);
+		
+		sww_4 = new JButton("Payment Method");
+		sww_4.addActionListener(this);
+		
+		sww_5 = new JButton("-----");
+		sww_5.addActionListener(this);
+		
+		sww_6 = new JButton("-----");
+		sww_6.addActionListener(this);
 		
 		
-		parent.add(a);
-		parent.add(b);
-		parent.add(c);
-		parent.add(d);
-		parent.add(ee);
-		parent.add(f);
+		parent.add(sww_1);
+		parent.add(sww_2);
+		parent.add(sww_3);
+		parent.add(sww_4);
+		parent.add(sww_5);
+		parent.add(sww_6);
 	}
 	
 	private void southPaneWEContents(JPanel parent) {
-		pay = new JButton("Pay");
-		pay.addActionListener(this);
-		parent.add(pay);
+		end = new JButton("Add Payment");
+		end.addActionListener(this);
+		parent.add(end);
 	}
 	
 	// Navigation for Product Category Panel
@@ -583,14 +592,65 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 			}
 		}
 		
-		if(e.getSource()==a) System.out.println("A");
-		if(e.getSource()==b) System.out.println("B");
-		if(e.getSource()==c) System.out.println("C");
-		if(e.getSource()==d) System.out.println("D");
-		if(e.getSource()==ee) System.out.println("E");
-		if(e.getSource()==f) System.out.println("F");
+		if(e.getSource()==sww_1) System.out.println("A");
+		if(e.getSource()==sww_2) System.out.println("B");
+		if(e.getSource()==sww_3) System.out.println("C");
+		if(e.getSource()==sww_4) System.out.println("D");
+		if(e.getSource()==sww_5) System.out.println("E");
+		if(e.getSource()==sww_6) System.out.println("F");
+		if(e.getSource()==end) System.out.println("Pay Button Pressed");
 		
-		if(e.getSource()==pay) System.out.println("Pay Button Pressed");
+		// delete row
+		if(e.getSource()==wp_1) { 			// Delete the selected Product
+			try {
+				int row = table.getSelectedRow();
+				t.removeFromCart(table.getValueAt(row, 0));
+				model.removeRow(row);
+				this.updateMoney();
+			} catch (ArrayIndexOutOfBoundsException expt) {
+				if(model.getRowCount()==0) popup.message("The cart is empty");
+				else if(table.getSelectedRow()==-1 && model.getRowCount() > 0) popup.message("Select a product from the cart");
+				
+			}
+			
+		} else if (e.getSource()==wp_2) { 	// Modify the quantity of a product
+			try {
+				int row = table.getSelectedRow();
+				t.updateProductQuantity(table.getValueAt(row, 0));
+				this.updateMoney();
+			} catch (ArrayIndexOutOfBoundsException e2) {
+				if(model.getRowCount()==0) popup.message("The cart is empty");
+				else if(table.getSelectedRow()==-1 && model.getRowCount() > 0) popup.message("Select a product from the cart");
+				}
+			
+		} else if (e.getSource()==wp_3) {	// Add 1 to the selected Product
+			try {
+				int row = table.getSelectedRow();
+				t.addOne(table.getValueAt(row, 0));
+			} catch (ArrayIndexOutOfBoundsException exption) {
+				if(model.getRowCount()==0) popup.message("The cart is empty");
+				else if(table.getSelectedRow()==-1 && model.getRowCount() > 0) popup.message("Select a product from the cart");
+			}
+			
+		} else if(e.getSource()==wp_4) { 	// Subtract 1 to the selected Product
+			try {
+				int row = table.getSelectedRow();
+				t.lessOne(table.getValueAt(row, 0), row);
+			} catch (ArrayIndexOutOfBoundsException exption) {
+				if(model.getRowCount()==0) popup.message("The cart is empty");
+				else if(table.getSelectedRow()==-1 && model.getRowCount() > 0) popup.message("Select a product from the cart");
+			}
+			
+		} else if (e.getSource()== wp_5) {	//Button to clear the contents of  the cart
+			try {
+				t.clearCart();
+				this.updateMoney();
+			} catch (Exception e2) {
+				if(model.getRowCount()==0) popup.message("The cart is empty");
+				else if(table.getSelectedRow()==-1 && model.getRowCount() > 0) popup.message("Select a product from the cart");
+			}
+			
+		}
 	}
 
 	
@@ -599,48 +659,54 @@ public class Dashboarded extends JFrame implements ActionListener, MouseListener
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if(e.getSource()==next) {
-			System.out.println("Next");
-			this.category.setText("Tae");
+			productContainer.removeAll();
+			categoryControl.categoryNext();
+			
+			category.setText(categoryControl.getCurrentCategoryName().toUpperCase());
+			
+			//Adds the previous buttons to the panel
+			for(Product kkk: categoryControl.getCurrentCategoryProducts()) {
+				productContainer.add(kkk.getButton());
+			}
+			productContainer.updateUI();
+			
 			
 		} else if (e.getSource()==previous){
-			System.out.println("Previous");
-			this.category.setText("AFAG");
+			productContainer.removeAll();
+			categoryControl.categoryPrevious();
 			
+			category.setText(categoryControl.getCurrentCategoryName().toUpperCase());
+			
+			//Adds the previous buttons to the panel
+			for(Product kkk: categoryControl.getCurrentCategoryProducts()) {
+				productContainer.add(kkk.getButton());
+			}
+			productContainer.updateUI();
 		}
-		
-		
 	}
-
 
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
-
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
-
-
+	
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
-
 
 	@Override
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
 }
 
-// Keyboard Listenrs / Keybinds
+// Keyboard Listeners / Key binds
 class KeyBind implements KeyListener{
 	private PopUp popup = new PopUp();
 	ArrayList<JButton> buttons = new ArrayList<JButton>();
@@ -658,16 +724,15 @@ class KeyBind implements KeyListener{
 	@Override
     public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
-       
+		
+		//Exit
        	if(key==KeyEvent.VK_ESCAPE) {
        		int x = popup.popUpPrompt(null, "Exit Program?");
-       		System.out.println(x);
+       		
     	   	if(x==0) {
     	   		System.exit(0);
     	   	}
        	}
-       	
-       	
        	
        	if(key==KeyEvent.VK_SPACE) {
        	}

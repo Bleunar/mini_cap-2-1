@@ -4,16 +4,22 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 
+import app.misc.PopUp;
+
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+
+import app.functions.Category;
 import app.functions.Product;
 
 public class Database extends Databased{
 	
-	public Database(String source){
-		System.out.println(source);
+	
+	public Database(){
+		//Nu uhh
 	}
 	
 	public boolean authenticate_account(String username, String password) {
@@ -32,29 +38,12 @@ public class Database extends Databased{
 	}
 	
 	
-	public ResultSet getProducts() {
-		return getAvailableProducts();
-	}
-	
-	public HashMap<Integer, String> getCategories(){
-		return getCategoriesDB();
-	}
-	
-	
-	public void updateProduct(int id, int quantity) {
-		this.updateProductQtty(id, quantity);
-	}
-	
 	public boolean isAdmin(String username) {
 		if(this.isAdminAccount(username)) {
 			return true;
 		} else {
 			return false;
 		}
-	}
-	
-	public ResultSet getProductsPerCategory(int category_id) {
-		return getProdPerCateg(category_id);
 	}
 	
 	public void close() {
@@ -64,16 +53,24 @@ public class Database extends Databased{
 	public ArrayList<Product> getProductsInCategory(int categ) {
 		return getProductsInCateg(categ);
 	}
+	
+	public ArrayList<Category> getAllCategories(){
+		return getAllCategoriesDB();
+	}
 }
+
+
 
 //Abstract class to avoid object creation
 abstract class Databased {
+	PopUp pop = new PopUp();
 	private String url = "jdbc:mysql://localhost:3306/coffee37";
 	private String usernameDB = "root";
 	private String passwordDB = "";
-	Connection conn;
+	private Connection conn;
 	
 	Databased(){
+		System.out.println("> Attempting to connect...");
 		startDB();
 	}
 	
@@ -85,14 +82,27 @@ abstract class Databased {
 			System.out.println("> Database Connection Success");
 			return true;
 		} catch (NullPointerException e) {
-			System.out.println("Error, Database is offline");
-		} catch (Exception e) {
+			System.out.println("Error, database");
+			pop.message("Database startup failed");
+			System.exit(0);
+		} catch (CommunicationsException e){
+			System.out.println("> Error, database is offline");
+			pop.message("Database is offline");
+			System.exit(0);
+		} catch(SQLSyntaxErrorException e) {
+			System.out.println("> Misconfigured database");
+			pop.message("Database startup failed, misconfigured");
+			System.exit(0);
+		}catch (Exception e) {
+			pop.message("Database startup failed");
 			e.printStackTrace();
+			System.exit(0);
 		}
 		return false;
 	}
 	
-	//Authentication prone to sql inject 
+	//Authentication prone to sequel inject
+	//NOT USED
 	protected boolean auth_account(String username, String password) {
 		String query = String.format("SELECT emp_username FROM employee where emp_username = '%S' and emp_password = '%s'", username, password);
 		System.out.println(query);
@@ -104,11 +114,12 @@ abstract class Databased {
 				return false;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("> err, auth_account  |  " +  e.getLocalizedMessage());
 			return false;
 		}
 	}
 	
+	// Authenticate account 2 (no sql inject)
 	protected boolean auth_account2(String username, String password) {
 		String query = String.format("SELECT * FROM employee");
 		ResultSet res = db_query(query);
@@ -122,69 +133,57 @@ abstract class Databased {
 			}
 			return false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("> err, auth_account2  |  " +  e.getLocalizedMessage());
 			return false;
 		}
 	}
 	
+	// Retrieves an employee's name with its user name
 	protected String getEmployeeName(String username) {
-		String query = "SELECT * FROM employee WHERE emp_username = '"+username+"'";
+		String query = "SELECT emp_fullName FROM employee WHERE emp_username = '"+username+"'";
 		
 		try {
 			ResultSet res = db_query(query);
 			String full_name = null;
-			int id = -1;
-			
-			while(res.next()) {
-				id = res.getInt("emp_id");
-				full_name = res.getString("emp_fullName");
-				break;
+			if(res.next()){
+				return res.getString("emp_fullName");
+			} else {
+				return null;
 			}
-			return full_name;
+			
 			
 		} catch (Exception e) {
-			System.out.println("> Error, " + e);
+			e.printStackTrace();
+			System.out.println("> Error, getEmployeeName | " + e);
 			return null;
 		}
 	}
 	
-	protected ResultSet getAvailableProducts(){
-		String query = "select * from products where prod_isAvailable;";
-		ResultSet res = db_query(query);
-		return res;
-	}
-	
-	//general query
-	
+	// General query
 	protected ResultSet db_query(String query) {
 		try {
 			Statement stmnt = conn.createStatement();
 			ResultSet res = stmnt.executeQuery(query);
-			
 			return res;
 			
-		} catch (NullPointerException e) {
-			System.out.println("Database is offline");
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("> err, db_query  |  " +  e.getLocalizedMessage());
 		}
 		 return null;
 	}
 	
+	// Close the database connection
 	protected void closeDB() {
 		try {
 			conn.close();
-			System.out.println("> Database Closed");
+			System.out.println("> Database Closed ");
 		} catch (SQLException e) {
-			System.out.println("> Error, closing database");
+			System.out.println("> err, closeDB  |  " +  e.getLocalizedMessage());
 		}
 	}
 	
-	protected void updateProductQtty(int id, int quantity) {
-		String query = "UPDATE products; SET product_quantity = '"+quantity+"' WHERE product_id = '"+id+"';";
-		this.db_query(query);
-	}
 	
+	// Verifies if an account is admin
 	protected boolean isAdminAccount(String username) {
 		try {
 			String query = "select * from employee where emp_username = '"+ username+"' and emp_isAdmin;";
@@ -195,47 +194,44 @@ abstract class Databased {
 				return false;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("> err, isAdminAccount  |  " +  e.getLocalizedMessage());
 			return false;
 		}
 	}
 	
-	protected HashMap<Integer, String> getCategoriesDB() {
-		String query = "select * from product_category";
-		ResultSet res = db_query(query);
-		HashMap<Integer, String> retorn = new HashMap<Integer, String>();
-		try {
-			while(res.next()) {
-				retorn.put(res.getInt("category_id"), res.getString("category_name"));
-			}
-			return retorn;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	protected ResultSet getProdPerCateg(int category_id) {
-		String query = "select * from products where category_id = " + category_id + ";";
-		return db_query(query);
-	}
-	
+	// Get products for a specific category
 	protected ArrayList<Product> getProductsInCateg(int category){
 		ArrayList<Product> products = new ArrayList<Product>();
 		try {
 			String query = "SELECT * FROM products WHERE category_id = '"+category+"' AND prod_isAvailable";
-			System.out.println(query);
 			Statement stmnt = conn.createStatement();
 			ResultSet result = stmnt.executeQuery(query);
 			
 			while(result.next()) {
-				products.add(new Product(result.getInt("prod_id"), result.getString("prod_name"), result.getDouble("prod_price"), result.getInt("prod_quantity")));
-				System.out.println("> Product added - " + result.getString("prod_name"));
+				products.add(new Product(result.getInt("prod_id"), result.getString("prod_name"), result.getDouble("prod_price")));
 			}
 			return products;
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("> err, getProductsInCateg  |  " +  e.getLocalizedMessage());
 			return null;
 		}
+	}
+	
+	// Get all categories from the database
+	protected ArrayList<Category> getAllCategoriesDB(){
+		ArrayList<Category> retorn = new ArrayList<Category>();
+		
+		try {
+			String query = "SELECT * FROM product_category";
+			Statement stmnt = conn.createStatement();
+			ResultSet result = stmnt.executeQuery(query);
+			
+			while(result.next()) {
+				retorn.add(new Category(result.getInt("category_id"),result.getString("category_name")));
+			}
+		} catch (Exception e) {
+			System.out.println("> err, getAllCategoriesDB  |  " +  e.getLocalizedMessage());
+		}
+		return retorn;
 	}
 }

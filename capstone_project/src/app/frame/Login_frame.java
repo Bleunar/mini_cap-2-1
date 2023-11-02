@@ -25,7 +25,7 @@ import app.misc.FontSize;
 import app.misc.PopUp;
 
 public class Login_frame extends JFrame implements ActionListener, KeyListener{
-	Database db = new Database("Login");
+	Database db = new Database();
 	FontSize font = new FontSize();
 	
 	private JPanel x = new JPanel();
@@ -50,6 +50,8 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 	PopUp pop_up = new PopUp();
 	Colors colors = new Colors();
 	
+	JPanel panelX;
+	
 	public Login_frame(){
 		this.setBounds(20, 20, 400, 200);
 		this.setLayout(new BorderLayout());
@@ -57,6 +59,11 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 		this.setLocationRelativeTo(null);
 		this.setUndecorated(true);
 		this.setResizable(false);
+		panelX = new JPanel();
+		panelX.setBorder(BorderFactory.createLineBorder(colors.app1, 5));
+		panelX.setLayout(new BorderLayout());
+		
+		this.setContentPane(panelX);
 		
 		//For Keyboard listener
 		this.addKeyListener(this);
@@ -126,7 +133,7 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 		input_panel.add(uname_container);
 		input_panel.add(pword_container);
 		
-		exit.setFont(font.regularPlain);
+		exit.setFont(font.regularBold);
 		exit.setFocusPainted(false);
 		exit.addActionListener(this);
 		exit.setFocusPainted(false);
@@ -156,24 +163,26 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 			String getUname = uname.getText();
 			String getPass = String.valueOf(pword.getPassword());
 			
-			
-			
-			
 			boolean result = db.authenticate_account(getUname, getPass);
 			if(result) {
 				boolean isAdmin = db.isAdmin(getUname);
 				if(isAdmin) {
+					panelX.setBorder(BorderFactory.createLineBorder(colors.goods, 5));
 					pop_up.popUp(null, "Successfuly Logged In, Admin");
-					this.setVisible(false); // change to close the frame
-					new Dashboarded();
+					this.dispose();
 					db.close();
+					new Dashboarded_admin();
+					
 				} else {
+					panelX.setBorder(BorderFactory.createLineBorder(colors.goods, 5));
 					pop_up.popUp(null, "Successfuly Logged In, Employee");
-					this.setVisible(false); // change to close the frame
-					new Dashboarded();
+					this.dispose();
+					db.close();
+					new Dashboarded(getUname);
 				}
 				
 			} else {
+				panelX.setBorder(BorderFactory.createLineBorder(colors.maPulaPula, 5));
 				pop_up.popUp(null, "Username or Password is incorrect");
 				uname.setText("");
 				uname.requestFocus();
@@ -208,7 +217,6 @@ public class Login_frame extends JFrame implements ActionListener, KeyListener{
 	    } else if (key == KeyEvent.VK_ESCAPE || key == KeyEvent.VK_DELETE) {
 	        exit.doClick();
 	    }
-		
 	}
 
 

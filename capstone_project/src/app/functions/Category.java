@@ -1,54 +1,49 @@
 package app.functions;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import app.database.Database;
 
 public class Category {
+	//Category properties
 	int category_id;
-	
+	String category_name;
 	JPanel categoryPane = new JPanel();
 	
-	ArrayList<Product> products = new ArrayList<Product>();
-	ArrayList<Integer> productsID = new ArrayList<Integer>();
+	
+	ArrayList<Product> products = new ArrayList<Product>();		//Stores the products in a category
+	
+	// Allows the category to communicate with the database and transaction
 	Database database;
 	Transaction transaction;
 	
-	public Category(int category_id, Database database, Transaction transaction){
+	public Category(int category_id, String category_name){
 		this.category_id = category_id;
-		System.out.println("category created");
-		
-		this.database = database;
-		this.transaction = transaction;
-		
-		setProducts();
-
+		this.category_name = category_name;
 	}
 	
-//	public void setSomething(Database database, Transaction transaction) {
-//		this.database = database;
-//		this.transaction = transaction;
-//	}
+	// Sets up the connection to the database and transaction objects
+	public void setSource(Database database, Transaction transaction) {
+		this.database = database;
+		this.transaction = transaction;
+		setProducts(); 
+	}
 	
-	//Adds 
+	//Retrieves all the products related to the category
 	void setProducts(){
 		ArrayList<Product> retrieved = database.getProductsInCategory(category_id);
-		if(retrieved.isEmpty()) {
-			System.out.println("result is empty");
-		}
 		
-		for(Product p: retrieved) {
-			p.setTransactionSource(transaction);
-			productsID.add(p.getId());
-			products.add(p);
+		if(retrieved.isEmpty()) System.out.println("> Category " + this.category_name + "  is empty");
+		else {
+			for(Product p: retrieved) {
+				p.setTransactionSource(transaction);
+				products.add(p);
+			}
 		}
+		retrieved.clear();
+		
 	}
 	
 	public ArrayList<Product> getProducts(){
@@ -63,38 +58,4 @@ public class Category {
 			System.out.println("------------------------");
 		}
 	}
-	
-	
-	
-//	void setProductPane() {
-//		for(Product p: products) {
-//			categoryPane.add(new ProductButton(p, transaction));
-//		}
-//	}
-	
 }
-
-
-//class ProductButton extends JButton implements ActionListener{
-//	Transaction transaction;
-//	Product product;
-//	
-//	public ProductButton(Product prod, Transaction transaction) {
-//		this.setText(prod.getProductName());
-//		this.addActionListener(this);
-//		this.setPreferredSize(new Dimension(121,100));
-//		
-//		this.transaction = transaction;
-//		this.product = prod;
-//	}
-//
-//	@Override
-//	public void actionPerformed(ActionEvent e) {
-//		if(e.getSource()==this) {
-//			System.out.println("ButtonClicked");
-//			int qtty = Integer.parseInt(JOptionPane.showInputDialog("Enter Quantity"));
-//			transaction.addToCart(product.getProductId(), qtty);
-//		}
-//		
-//	}
-//}

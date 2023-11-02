@@ -1,44 +1,42 @@
 package app.functions;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class Product implements ActionListener{
+	
+	//Product properties
 	private String productName;
 	private int productId;
 	private double productPrice;
-	private int productQuantity;
 	
-	JFrame frame;
-	
+	// Button component for dashboard
 	private JButton button;
-	
+
 	private Transaction transaction;
 	
 	
-	public Product(int id, String name, double price, int quantity) {
+	public Product(int id, String name, double price) {
 		this.productId = id;
 		this.productName = name;
 		this.productPrice = price;
-		this.productQuantity = quantity;
 		
 		//Creates the button
 		button = new JButton(this.productName);
-		button.setPreferredSize(new Dimension(121,100));
+		button.setPreferredSize(new Dimension(184,100));
+		button.setFont(new Font("Arial", Font.BOLD, 14));
 		button.addActionListener(this);
 	}
 	
-	
-	//Setters
+	//Sets the source for transaction
 	public void setTransactionSource(Transaction t) {
 		this.transaction = t;
 	}
-	
 	
 	//Getters
 	public int getId() {
@@ -50,28 +48,25 @@ public class Product implements ActionListener{
 	public double getPrice() {
 		return this.productPrice;
 	}
-	public int getProductQuantity() {
-		return this.productQuantity;
-	}
 	
 	public JButton getButton() {
 		return button;
 	}
 
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource()==button) {
-			System.out.println("ButtonClicked");
-			String qtty = JOptionPane.showInputDialog("Enter Quantity");
-			if(qtty.matches(".*[a-zA-Z]+.*") || qtty.isBlank()) {
-				System.out.println("> error, invalid input");
-			} else {
-				transaction.addToCart(this, Integer.parseInt(qtty));
+		try {
+			if(e.getSource()==button) {
+				String qtty = JOptionPane.showInputDialog("Enter Quantity");
+				if(qtty.matches(".*[a-zA-Z]+.*") || qtty.isBlank() || qtty.isEmpty()) {
+					System.out.println("> error, input is invalid or empty");
+				} else {
+					transaction.addToCart(this, Integer.parseInt(qtty));
+				}
 			}
-			
+		} catch (NullPointerException e2) {
+			//do nothing haha
 		}
-		
 	}
 }
 

@@ -16,5 +16,6 @@ public class FontSize {
 	public final Font smallBold = new Font("Arial", Font.BOLD, 10);
 	
 	public FontSize(){
+		
 	}
 }

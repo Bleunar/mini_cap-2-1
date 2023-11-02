@@ -30,7 +30,8 @@ public class Colors {
 	public Color notThatWhite = new Color(230,230,230);
 	public Color medyoBlue = new Color(230,230,255);
 	public Color maPinkPink = new Color(255,240,240);
-	public Color maPulaPula = new Color(255,150,150);
+	public Color maPulaPula = new Color(255,100,100);
+	public Color goods = new Color(100, 170, 100);
 	public Color itom = new Color(0,0,0);
 
 	
